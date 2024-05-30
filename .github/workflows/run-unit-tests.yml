@@ -1,19 +1,25 @@
-name       : Run Unit Tests
+name       : Run Tests - Unit
 on:
-  push
+  push:
+
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        python-version: [ 3.7.17, 3.8.18, 3.9.19, 3.10.14, 3.11.9, 3.12.3 , 3.13.0-beta.1 ]
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Dependencies
-        uses: ./.github/actions/install-dependencies
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies (using Pip)
+        uses: ./.github/actions/install-dependencies-pytest
+        with:
+          python-version: 3.12.3
 
       - name: Run Unit Tests
-        uses: ./.github/actions/run-unit-tests
+        uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/run-unit-tests@main
         with:
-          codecov_token         : ${{ secrets.CODECOV_TOKEN         }}
-          package_name          : ${{ secrets.PACKAGE_NAME          }}
-          GIT_HUB__ACCESS_TOKEN : ${{ secrets.GIT_HUB__ACCESS_TOKEN }}
+          package_name: 'osbot_prefect'
 
