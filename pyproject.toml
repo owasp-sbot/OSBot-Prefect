@@ -1,3 +1,5 @@
+# poetry install didn't work because of pendulum (which is a dependency of prefect)
+# pip install prefect did work
 [tool.poetry]
 name        = "osbot_prefect"
 version     = "v0.0.1"
@@ -11,6 +13,7 @@ repository  = "https://github.com/owasp-sbot/OSBot-Prefect"
 [tool.poetry.dependencies]
 python          = "^3.7"
 osbot-utils     = "*"
+prefect         = "*"
 
 
 [build-system]
