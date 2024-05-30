@@ -17,6 +17,6 @@ jobs:
       - name: Increment Tag - Dev
         uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/increment-tag-dev@main
         with:
-          package_name: '3.12.3'
+          package_name: 'osbot_prefect'
 
 
