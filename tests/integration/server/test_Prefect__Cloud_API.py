@@ -1,5 +1,6 @@
 from unittest                                                           import TestCase
 
+from osbot_utils.utils.Dev import pprint
 from osbot_utils.utils.Lists                                            import list_in_list
 from osbot_utils.utils.Misc import list_set, random_id, is_guid, random_text
 from osbot_utils.utils.Env                                              import load_dotenv, get_env
@@ -52,6 +53,10 @@ class test_Prefect__Cloud_API(TestCase):
             assert delete_response_2 is False
 
 
+    def test_flow_run__create(self):
+        flow_run_definition = { "name": "my-flow-run",
+                                "flow_id": self.flow_id }
+        #pprint(flow_run_definition)
 
     def test_flows(self):
         flows    = self.prefect_cloud_api.flows()

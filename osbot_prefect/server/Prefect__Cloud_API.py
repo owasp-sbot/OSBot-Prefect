@@ -7,6 +7,9 @@ from osbot_prefect.server.Prefect__Rest_API     import Prefect__Rest_API
 class Prefect__Cloud_API(Type_Safe):
     prefect_rest_api = Prefect__Rest_API()
 
+    def flow(self, flow_id):
+        return self.prefect_rest_api.read(target='flows', target_id=flow_id).get('data') or {}
+
     def flow__create(self, flow_definition):
         return self.prefect_rest_api.create(target='flows', data=flow_definition).get('data') or {}
 
@@ -14,9 +17,8 @@ class Prefect__Cloud_API(Type_Safe):
         response = self.prefect_rest_api.delete(target='flows', target_id=flow_id)
         return response.get('status') == 'ok'
 
-
-    def flow(self, flow_id):
-        return self.prefect_rest_api.read(target='flows', target_id=flow_id).get('data') or {}
+    def flow_run__create(self, flow_id, flow_run_definition):
+        return self.prefect_rest_api.create(target='flow_run', data=flow_run_definition)#.get('data') or {}
 
     def flows(self, limit=5):
         return self.prefect_rest_api.filter(target='flows', limit=limit).get('data') or []
