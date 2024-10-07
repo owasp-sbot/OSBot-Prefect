@@ -13,7 +13,7 @@ class Temp__Flow_Run(Temp__Flow):
         return self
 
     def flow_run__create(self):
-        self.flow_run    = self.prefect_cloud_api.flow_run__create({'flow_id': self.flow_id})
+        self.flow_run    = self.prefect_cloud_api.flow_run__create({'flow_id': self.flow_id}).data
         self.flow_run_id = self.flow_run.id
         return self
 
@@ -21,4 +21,4 @@ class Temp__Flow_Run(Temp__Flow):
         return self.flow_run__info() is not None
 
     def flow_run__info(self):
-        return self.prefect_cloud_api.flow_run(self.flow_run_id)
+        return self.prefect_cloud_api.flow_run(self.flow_run_id).data

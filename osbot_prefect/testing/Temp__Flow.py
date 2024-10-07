@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+from osbot_utils.utils.Dev import pprint
+
 from osbot_utils.helpers.Random_Guid import Random_Guid
 
 from osbot_prefect.server.Prefect__Cloud_API import Prefect__Cloud_API
@@ -22,7 +24,7 @@ class Temp__Flow(Type_Safe):
         self.flow__delete()
 
     def flow__create(self):
-        self.flow    = self.prefect_cloud_api.flow__create({'name': self.flow_name})
+        self.flow    = self.prefect_cloud_api.flow__create({'name': self.flow_name}).data
         self.flow_id = self.flow.id
         return self
 
@@ -33,5 +35,5 @@ class Temp__Flow(Type_Safe):
         return self.flow__info() is not None
 
     def flow__info(self):
-        return self.prefect_cloud_api.flow(self.flow_id)
+        return self.prefect_cloud_api.flow(self.flow_id).data
 

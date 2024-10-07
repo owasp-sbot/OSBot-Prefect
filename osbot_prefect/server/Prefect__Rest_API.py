@@ -51,14 +51,15 @@ class Prefect__Rest_API(Type_Safe):
         content_type = response.headers.get('Content-Type', '')
         if 200 <= status_code < 300:
             if method == requests.head:                                                 # For HEAD requests, return the headers as the response data
-                return status_ok(data=response.headers)
-            if content_type == 'application/json':                                      # For successful JSON responses, return the JSON data
+                result = status_ok(data=response.headers)
+            elif content_type == 'application/json':                                      # For successful JSON responses, return the JSON data
                 json_data  = response.json()
-                json_as_obj = dict_to_obj(json_data)
-                return status_ok(data=json_as_obj)
-            return status_ok(data=response.text)                                      # For other successful requests, return the JSON data
-
-        return status_error(message=f"{method.__name__.upper()} request to {path}, failed with status {status_code}", error=response.text) # For failed requests, return an error message with status and response text
+                result = status_ok(data=json_data)
+            else:
+                result = status_ok(data=response.text)                                      # For other successful requests, return the JSON data
+        else:
+            result = status_error(message=f"{method.__name__.upper()} request to {path}, failed with status {status_code}", error=response.text) # For failed requests, return an error message with status and response text
+        return dict_to_obj(result)
 
 
     def requests__delete(self, path, params=None):                                      # Wrapper for executing DELETE requests
