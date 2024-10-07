@@ -23,6 +23,7 @@ class test_Prefect__Rest_API(TestCase):
         assert self.prefect_rest_api.prefect_api_url() == expected_url
 
     def test_local_server__api_status(self):
-        url_health = get_env(ENV_NAME__PREFECT_TARGET_SERVER) + '/health'
-        assert url_health == 'http://localhost:4200/api/health'
-        assert GET(url_health) == 'true'
+        if get_env(ENV_NAME__PREFECT_TARGET_SERVER):
+            url_health = get_env(ENV_NAME__PREFECT_TARGET_SERVER) + '/health'
+            assert url_health == 'http://localhost:4200/api/health'
+            assert GET(url_health) == 'true'
