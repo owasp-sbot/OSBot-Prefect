@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 
 from osbot_utils.utils.Dev import pprint
@@ -7,16 +8,7 @@ from osbot_prefect.server.Prefect__Rest_API     import Prefect__Rest_API
 from osbot_utils.utils.Objects import dict_to_obj
 
 
-class Prefect__States(Type_Safe):
-    SCHEDULED : str = "SCHEDULED"
-    PENDING   : str = "PENDING"
-    RUNNING   : str = "RUNNING"
-    CANCELLING: str = "CANCELLING"
-    CANCELLED : str = "CANCELLED"
-    COMPLETED : str = "COMPLETED"
-    FAILED    : str = "FAILED"
-    CRASHED   : str = "CRASHED"
-    PAUSED    : str = "PAUSED"
+
 
 class Prefect__Cloud_API(Type_Safe):
     prefect_rest_api = Prefect__Rest_API()
@@ -62,11 +54,21 @@ class Prefect__Cloud_API(Type_Safe):
         return self.prefect_rest_api.update(target='flow_runs', target_id=flow_run_id, target_data=flow_run_definition)
 
     def flows(self, limit=5):
-        return self.prefect_rest_api.filter(target='flows', limit=limit).data or []
+        filter_data = {"sort": "CREATED_DESC",
+                       "limit": limit}
+        return self.prefect_rest_api.filter(target='flows', filter_data=filter_data).data or []
 
     def flows_ids(self, limit=5):                                       # todo: see if there is a way to get these IDs directly via a GraphQL query
         flows = self.flows(limit=limit)
         return [flow.id for flow in flows]
+
+    def logs__create(self, log_data):
+        return self.prefect_rest_api.create(target='logs', data=log_data)
+
+    def logs__filter(self, limit=5):
+        filter_data = {"sort": "TIMESTAMP_DESC",
+                       "limit": limit}
+        return self.prefect_rest_api.filter(target='logs', filter_data=filter_data)
 
     def task_run(self, task_run_id):
         return self.prefect_rest_api.read(target='task_runs', target_id=task_run_id)
@@ -86,5 +88,15 @@ class Prefect__Cloud_API(Type_Safe):
     def task_run__set_state_type(self, task_run_id, state_type):
         return self.task_run__set_state(task_run_id, {'type': state_type})
 
+    def to_prefect_timestamp(self, date_time):
+        return date_time.isoformat()
+        #return date_time.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
+    def to_prefect_timestamp__now_utc(self):
+        return self.to_prefect_timestamp(datetime.now(timezone.utc))
+
+    def to_prefect_timestamp__now_utc__with_delta(self, hours=0, minutes=0, seconds=0, milliseconds=0,microseconds=0):
+        current_time = datetime.now(timezone.utc)
+        new_time     = current_time + timedelta(hours=hours,minutes=minutes, seconds=seconds,milliseconds=milliseconds, microseconds=microseconds)
+        return self.to_prefect_timestamp(new_time)
 

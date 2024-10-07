@@ -1,4 +1,5 @@
 from types                                  import SimpleNamespace
+from osbot_prefect.server.Prefect__States   import Prefect__States
 from osbot_utils.utils.Misc                 import random_text
 from osbot_utils.helpers.Random_Guid        import Random_Guid
 from osbot_prefect.testing.Temp__Flow_Run   import Temp__Flow_Run
@@ -35,3 +36,6 @@ class Temp__Task_Run(Temp__Flow_Run):
 
     def task_run__set_state(self, state):
         return self.prefect_cloud_api.task_run__set_state_type(self.task_run_id, state)
+
+    def task_run__set_state__running(self):
+        return self.task_run__set_state(Prefect__States.RUNNING)

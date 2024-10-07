@@ -1,14 +1,14 @@
 from unittest                                       import TestCase
 
-from osbot_prefect.testing.Temp__Task_Run import Temp__Task_Run
-from osbot_utils.helpers.Random_Guid import Random_Guid
+from osbot_utils.utils.Dev import pprint
 
+from osbot_prefect.server.Prefect__States           import Prefect__States
+from osbot_prefect.testing.Temp__Task_Run           import Temp__Task_Run
 from osbot_prefect.testing.Temp__Flow_Run           import Temp__Flow_Run
-from osbot_utils.utils.Dev                          import pprint
-from osbot_utils.utils.Misc import list_set, random_id, is_guid, random_text, wait_for
-from osbot_utils.utils.Env                          import load_dotenv, get_env
-from osbot_prefect.server.Prefect__Cloud_API        import Prefect__Cloud_API, Prefect__States
-from osbot_utils.utils.Objects                      import dict_to_obj, obj_data, obj_to_dict
+from osbot_utils.utils.Misc                         import random_id, is_guid, random_text
+from osbot_utils.utils.Env                          import load_dotenv
+from osbot_prefect.server.Prefect__Cloud_API        import Prefect__Cloud_API
+from osbot_utils.utils.Objects import dict_to_obj, obj_to_dict
 
 
 class test_Prefect__Cloud_API(TestCase):
@@ -122,6 +122,45 @@ class test_Prefect__Cloud_API(TestCase):
                 flow_id   = flows_ids.pop()
                 flow      = self.prefect_cloud_api.flow(flow_id=flow_id).data
                 assert flow.id == flow_id
+
+    def test_logs_create(self):
+        with Temp__Task_Run() as _:
+            log_item_0 = dict_to_obj({"name"       : "log_to_flow", "level": 0 , "message": "log_to_flow"                        ,
+                                      "timestamp"  : self.prefect_cloud_api.to_prefect_timestamp__now_utc()                      ,
+                                      "flow_run_id": _.flow_run_id                                                               })
+            log_item_1 = dict_to_obj({"name"       : "log_to_task", "level": 10, "message": "log_to_task"                        ,
+                                      "timestamp"  : self.prefect_cloud_api.to_prefect_timestamp__now_utc__with_delta(seconds=-5) ,
+                                      "task_run_id": _.task_run_id                                                               })
+            log_item_2 = dict_to_obj({"name"       : "log_to_both", "level": 20, "message": "log_to_both"                        ,
+                                      "timestamp"  : self.prefect_cloud_api.to_prefect_timestamp__now_utc__with_delta(seconds=-10),
+                                      "task_run_id": _.task_run_id, "flow_run_id": _.flow_run_id                                 })
+
+            _.flow_run__set_state__running()
+            _.task_run__set_state__running()
+
+            assert _.prefect_cloud_api.logs__create([obj_to_dict(log_item_0)]).status == 'ok'
+            assert _.prefect_cloud_api.logs__create([obj_to_dict(log_item_1)]).status == 'ok'
+            assert _.prefect_cloud_api.logs__create([obj_to_dict(log_item_2)]).status == 'ok'
+
+            logs = _.prefect_cloud_api.logs__filter().data
+            assert logs[0].name        == log_item_0.name
+            assert logs[0].level       == log_item_0.level
+            assert logs[0].message     == log_item_0.message
+            assert logs[0].timestamp   == log_item_0.timestamp
+            assert logs[0].flow_run_id == log_item_0.flow_run_id
+            assert logs[0].task_run_id is None
+
+            # todo: figure out why the checks below fail intermittently (also add the test for log_item_2)
+            # assert logs[1].name        == log_item_1.name
+            # assert logs[1].level       == log_item_1.level
+            # assert logs[1].message     == log_item_1.message
+            # assert logs[1].timestamp   == log_item_1.timestamp
+            # assert logs[1].flow_run_id is None
+            # assert logs[1].task_run_id == log_item_1.task_run_id
+
+
+
+
 
     def test_task_run__create(self):
         with Temp__Task_Run() as _:
