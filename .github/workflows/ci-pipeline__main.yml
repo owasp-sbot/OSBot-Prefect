@@ -1,0 +1,52 @@
+name : CI Pipeline - MAIN
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  RELEASE_TYPE           : 'major'
+  PACKAGE_NAME           : 'osbot_prefect'
+  PREFECT_TARGET_SERVER  : ${{ secrets.PREFECT_TARGET_SERVER       }}
+
+jobs:
+
+  start-prefect-server__and-run-tests:
+    name: "Start Prefect and Run Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "run-prefect-tests"
+        uses: ./.github/actions/run-prefect-tests
+
+  increment-tag:
+    #if: False
+    name: Increment Tag - MAIN
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increment Tag
+        uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/git__increment-tag@dev
+        with:
+          release_type: ${{ env.RELEASE_TYPE }}
+    needs:
+      - start-prefect-server__and-run-tests
+
+  publish-to-pypi:
+    if: False
+    name: "Publish to: PYPI"
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Git Update Current Branch
+        uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/git__update_branch@dev
+
+      - name: publish-to-pypi
+        uses: owasp-sbot/OSBot-GitHub-Actions/.github/actions/pypi__publish@dev
+    needs:
+      - increment-tag
