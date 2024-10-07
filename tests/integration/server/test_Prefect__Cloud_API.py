@@ -1,5 +1,6 @@
 from unittest                                       import TestCase
 
+from osbot_prefect.testing.Temp__Flow_Run import Temp__Flow_Run
 from osbot_utils.utils.Dev import pprint
 
 from osbot_utils.utils.Misc                         import list_set, random_id, is_guid, random_text
@@ -87,12 +88,18 @@ class test_Prefect__Cloud_API(TestCase):
             assert flow_run_3.tags                 == tags_2
             assert _.flow_run__delete(flow_run_id) is True
 
+    def test_flow_run__input(self):
+        with Temp__Flow_Run() as _:
+            input_data = { "key"   : "string" ,
+                           "value" : "string" ,
+                           "sender": "string" }
+            assert _.prefect_cloud_api.flow_run__input(_.flow_run_id, input_data) is True
+            # todo: add a test that checks that the input data is correctly set and how to use it
+
     def test_flow_run__set_state(self):
-        flow_name           = random_id(prefix="flow-name")
-        flow_run_definition = { "name": flow_name,
-                                "flow_id": self.flow_id}
-        with self.prefect_cloud_api as _:
-            flow_run = _.flow_run__create(flow_run_definition)
+        with Temp__Flow_Run() as temp_flow_run:                                                 # todo: refactor code below to make better use of the Temp__Flow_Run class
+            _        = temp_flow_run.prefect_cloud_api
+            flow_run = temp_flow_run.flow_run
             assert _.flow_run(flow_run.id).state.type == "PENDING"
             for value in Prefect__States().__locals__().values():                               # todo: see if need to test all these
                 state_data = { "type": value }
