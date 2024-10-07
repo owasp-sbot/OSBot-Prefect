@@ -1,5 +1,6 @@
 from unittest                                       import TestCase
 
+from osbot_prefect.server.Prefect__Artifacts import Prefect__Artifacts
 from osbot_utils.utils.Dev import pprint
 
 from osbot_prefect.server.Prefect__States           import Prefect__States
@@ -25,6 +26,30 @@ class test_Prefect__Cloud_API(TestCase):
 
     def test__setUpClass(self):
         assert is_guid(self.flow_id)
+
+    # valid artifacts types:
+
+    def test_artifacts__create(self):
+        with Temp__Task_Run() as _:
+            artifacts_data = {"key": "an-key",
+                              "type": Prefect__Artifacts.RESULT,
+                              "description": "# an_description\n\n- an item",
+                              "data": {"answer": "# 42 \n\n- an item"},
+                              "metadata_": {
+                                "additional_prop_1": "an_prop_1",
+                                "additional_prop_2": "an_prop_2",
+                                "additional_prop_3": "an_prop_2"
+                              },
+                              "flow_run_id": _.flow_run_id,
+                              "task_run_id": _.task_run_id
+                            }
+            #pprint(_.prefect_cloud_api.artifacts__create(artifacts_data))
+            _.flow_run__set_state__running()
+            _.task_run__set_state__running()
+            assert _.prefect_cloud_api.artifacts__create(artifacts_data).status == 'ok'
+            _.task_run__set_state__completed()
+            _.flow_run__set_state__completed()
+            print()
 
     def test_flow_create(self):
         with self.prefect_cloud_api as _:

@@ -27,5 +27,8 @@ class Temp__Flow_Run(Temp__Flow):
     def flow_run__set_state(self, state):
         return self.prefect_cloud_api.flow_run__set_state_type(self.flow_run_id, state)
 
+    def flow_run__set_state__completed(self):
+        return self.flow_run__set_state(Prefect__States.COMPLETED)
+
     def flow_run__set_state__running(self):
         return self.flow_run__set_state(Prefect__States.RUNNING)

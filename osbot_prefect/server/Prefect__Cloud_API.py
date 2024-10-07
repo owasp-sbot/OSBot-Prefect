@@ -13,6 +13,9 @@ from osbot_utils.utils.Objects import dict_to_obj
 class Prefect__Cloud_API(Type_Safe):
     prefect_rest_api = Prefect__Rest_API()
 
+    def artifacts__create(self, artifact_data):
+        return self.prefect_rest_api.create(target='artifacts', data=artifact_data)
+
     def flow(self, flow_id):
         return self.prefect_rest_api.read(target='flows', target_id=flow_id)
 
