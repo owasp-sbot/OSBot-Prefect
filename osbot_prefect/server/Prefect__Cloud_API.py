@@ -1,10 +1,18 @@
-from osbot_utils.utils.Dev import pprint
+from enum import Enum
 
-from osbot_utils.utils.Lists                    import list_index_by
-from osbot_utils.utils.Misc                     import list_set
 from osbot_utils.base_classes.Type_Safe         import Type_Safe
 from osbot_prefect.server.Prefect__Rest_API     import Prefect__Rest_API
 
+class Prefect__States(Type_Safe):
+    SCHEDULED : str = "SCHEDULED"
+    PENDING   : str = "PENDING"
+    RUNNING   : str = "RUNNING"
+    CANCELLING: str = "CANCELLING"
+    CANCELLED : str = "CANCELLED"
+    COMPLETED : str = "COMPLETED"
+    FAILED    : str = "FAILED"
+    CRASHED   : str = "CRASHED"
+    PAUSED    : str = "PAUSED"
 
 class Prefect__Cloud_API(Type_Safe):
     prefect_rest_api = Prefect__Rest_API()
@@ -33,7 +41,6 @@ class Prefect__Cloud_API(Type_Safe):
 
         response = self.prefect_rest_api.update_action(**kwargs)
         return response.get('status') == 'ok'
-
 
     def flow_run__delete(self, flow_run_id):
         response = self.prefect_rest_api.delete(target='flow_runs', target_id=flow_run_id)

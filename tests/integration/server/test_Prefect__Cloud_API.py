@@ -4,7 +4,7 @@ from osbot_utils.utils.Dev import pprint
 
 from osbot_utils.utils.Misc                         import list_set, random_id, is_guid, random_text
 from osbot_utils.utils.Env                          import load_dotenv, get_env
-from osbot_prefect.server.Prefect__Cloud_API        import Prefect__Cloud_API
+from osbot_prefect.server.Prefect__Cloud_API import Prefect__Cloud_API, Prefect__States
 from osbot_utils.utils.Objects                      import dict_to_obj, obj_data, obj_to_dict
 
 
@@ -88,18 +88,17 @@ class test_Prefect__Cloud_API(TestCase):
             assert _.flow_run__delete(flow_run_id) is True
 
     def test_flow_run__set_state(self):
-        flow_run_state_1    = { "type": "RUNNING"   }
-        #flow_run_state_2    = { "type": "COMPLETED" }
-
         flow_name           = random_id(prefix="flow-name")
         flow_run_definition = { "name": flow_name,
                                 "flow_id": self.flow_id}
         with self.prefect_cloud_api as _:
             flow_run = _.flow_run__create(flow_run_definition)
-
             assert _.flow_run(flow_run.id).state.type == "PENDING"
-            assert _.flow_run__set_state(flow_run.id, flow_run_state_1) is True
-            assert _.flow_run(flow_run.id).state.type == "RUNNING"
+            for value in Prefect__States().__locals__().values():                               # todo: see if need to test all these
+                state_data = { "type": value }
+                assert _.flow_run__set_state(flow_run.id, state_data ) is True
+                if value not in ['COMPLETED', 'FAILED', 'CRASHED', 'PAUSED']:                   # after CANCELLED none of these work
+                    assert _.flow_run(flow_run.id).state.type == value
             assert _.flow_run__delete(flow_run.id) is True
 
     def test_flows(self):
