@@ -52,6 +52,9 @@ class Prefect__Cloud_API(Type_Safe):
 
         return self.prefect_rest_api.update_action(**kwargs)
 
+    def flow_run__set_state_type(self, flow_run_id, state_type):
+        return self.flow_run__set_state(flow_run_id, {'type': state_type})
+
     def flow_run__delete(self, flow_run_id):
         return self.prefect_rest_api.delete(target='flow_runs', target_id=flow_run_id)
 
@@ -65,8 +68,23 @@ class Prefect__Cloud_API(Type_Safe):
         flows = self.flows(limit=limit)
         return [flow.id for flow in flows]
 
+    def task_run(self, task_run_id):
+        return self.prefect_rest_api.read(target='task_runs', target_id=task_run_id)
+
+
     def task_run__create(self, task_run_definition):
         return self.prefect_rest_api.create(target='task_runs', data=task_run_definition)
+
+    def task_run__set_state(self, task_run_id, state):
+        kwargs = dict(target        = 'task_runs'       ,
+                      target_id     = task_run_id       ,
+                      target_action = 'set_state'       ,
+                      target_data   = { 'state': state })
+
+        return self.prefect_rest_api.update_action(**kwargs)
+
+    def task_run__set_state_type(self, task_run_id, state_type):
+        return self.task_run__set_state(task_run_id, {'type': state_type})
 
 
 

@@ -1,7 +1,11 @@
 from unittest                                       import TestCase
+
+from osbot_prefect.testing.Temp__Task_Run import Temp__Task_Run
+from osbot_utils.helpers.Random_Guid import Random_Guid
+
 from osbot_prefect.testing.Temp__Flow_Run           import Temp__Flow_Run
 from osbot_utils.utils.Dev                          import pprint
-from osbot_utils.utils.Misc                         import list_set, random_id, is_guid, random_text
+from osbot_utils.utils.Misc import list_set, random_id, is_guid, random_text, wait_for
 from osbot_utils.utils.Env                          import load_dotenv, get_env
 from osbot_prefect.server.Prefect__Cloud_API        import Prefect__Cloud_API, Prefect__States
 from osbot_utils.utils.Objects                      import dict_to_obj, obj_data, obj_to_dict
@@ -120,7 +124,12 @@ class test_Prefect__Cloud_API(TestCase):
                 assert flow.id == flow_id
 
     def test_task_run__create(self):
-        with Temp__Flow_Run() as _:
-            task_run_definition = { "flow_run_id": _.flow_run_id}
-            task_run = _.prefect_cloud_api.task_run__create(task_run_definition)
-            #pprint(task_run)
+        with Temp__Task_Run() as _:
+            assert _.flow_run__info().state.type == "PENDING"
+            assert _.flow_run__set_state(Prefect__States.RUNNING).data.status == 'ACCEPT'
+            assert _.flow_run__info().state.type == "RUNNING"
+            assert _.task_run__info().state.type == "PENDING"
+            assert _.task_run__set_state(Prefect__States.RUNNING).data.status == 'ACCEPT'
+            assert _.task_run__info().state.type == "RUNNING"
+            assert _.task_run__set_state(Prefect__States.COMPLETED).data.status == 'ACCEPT'
+            assert _.task_run__info().state.type == "COMPLETED"

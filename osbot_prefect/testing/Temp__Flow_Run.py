@@ -22,3 +22,6 @@ class Temp__Flow_Run(Temp__Flow):
 
     def flow_run__info(self):
         return self.prefect_cloud_api.flow_run(self.flow_run_id).data
+
+    def flow_run__set_state(self, state):
+        return self.prefect_cloud_api.flow_run__set_state_type(self.flow_run_id, state)
