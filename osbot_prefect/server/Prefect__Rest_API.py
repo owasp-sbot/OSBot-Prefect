@@ -2,6 +2,7 @@ import requests
 from osbot_utils.utils.Http             import url_join_safe
 from osbot_utils.utils.Env              import get_env
 from osbot_utils.base_classes.Type_Safe import Type_Safe
+from osbot_utils.utils.Objects import dict_to_obj
 from osbot_utils.utils.Status           import status_ok, status_error
 
 ENV_NAME__PREFECT_CLOUD__API_KEY      = 'PREFECT_CLOUD__API_KEY'
@@ -39,24 +40,28 @@ class Prefect__Rest_API(Type_Safe):
             response = method(endpoint, headers=headers, params=data)
         elif method == requests.head:                                                   # For HEAD requests, no payload or parameters are needed
             response = method(endpoint, headers=headers)
-        elif method == requests.post:                                                   # For POST and other requests, pass data as JSON in the request body
+        elif method == requests.post:                                                   # For POST requests, pass data as JSON in the request body
+            response = method(endpoint, headers=headers, json=data)
+        elif method == requests.patch:                                                  # For PATCH requests, pass data as JSON in the request body
             response = method(endpoint, headers=headers, json=data)
         else:
             return status_error("Unsupported request method")                           # Return an error if the method is not supported
 
-        status_code  = response.status_code                                              # Handle the response and return an appropriate result
+        status_code  = response.status_code                                             # Handle the response and return an appropriate result
         content_type = response.headers.get('Content-Type', '')
         if 200 <= status_code < 300:
             if method == requests.head:                                                 # For HEAD requests, return the headers as the response data
                 return status_ok(data=response.headers)
             if content_type == 'application/json':                                      # For successful JSON responses, return the JSON data
-                return status_ok(data=response.json())
+                json_data  = response.json()
+                json_as_obj = dict_to_obj(json_data)
+                return status_ok(data=json_as_obj)
             return status_ok(data=response.text)                                      # For other successful requests, return the JSON data
 
         return status_error(message=f"{method.__name__.upper()} request to {path}, failed with status {status_code}", error=response.text) # For failed requests, return an error message with status and response text
 
 
-    def requests__delete(self, path, params=None):                                         # Wrapper for executing GET requests
+    def requests__delete(self, path, params=None):                                      # Wrapper for executing DELETE requests
         return self.requests__for_method(requests.delete, path, data=params)
 
     def requests__get(self, path, params=None):                                         # Wrapper for executing GET requests
@@ -67,6 +72,9 @@ class Prefect__Rest_API(Type_Safe):
 
     def requests__head(self, path):                                                     # Wrapper for executing HEAD requests
         return self.requests__for_method(requests.head, path)
+
+    def requests__update(self, path, data):                                               # Wrapper for executing PATCH requests
+        return self.requests__for_method(requests.patch, path, data=data)
 
     # request helpers
 
@@ -87,3 +95,11 @@ class Prefect__Rest_API(Type_Safe):
         data = { "sort" : "CREATED_DESC",
                  "limit": limit         }
         return self.requests__post(path, data)
+
+    def update(self, target, target_id, target_data):
+        path = f'/{target}/{target_id}'
+        return self.requests__update(path, target_data)
+
+    def update_action(self, target, target_id, target_action, target_data):
+        path = f'/{target}/{target_id}/{target_action}'
+        return self.requests__post(path, target_data)
