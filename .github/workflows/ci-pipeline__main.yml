@@ -21,7 +21,6 @@ jobs:
         uses: ./.github/actions/run-prefect-tests
 
   increment-tag:
-    #if: False
     name: Increment Tag - MAIN
     runs-on: ubuntu-latest
     steps:
