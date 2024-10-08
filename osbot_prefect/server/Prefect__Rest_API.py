@@ -1,4 +1,6 @@
 import requests
+from osbot_utils.decorators.methods.cache_on_self import cache_on_self
+
 from osbot_utils.utils.Http             import url_join_safe
 from osbot_utils.utils.Env              import get_env
 from osbot_utils.base_classes.Type_Safe import Type_Safe
@@ -33,6 +35,7 @@ class Prefect__Rest_API(Type_Safe):
     def prefect_cloud__workspace_id(self):
         return get_env(ENV_NAME__PREFECT_CLOUD__WORKSPACE_ID)
 
+    @cache_on_self
     def prefect_api_url(self):                                  # todo: add back the support for Prefect API Cloud (to be configured by en
         prefect_cloud_url = self.prefect_cloud__api_url()
         if prefect_cloud_url:

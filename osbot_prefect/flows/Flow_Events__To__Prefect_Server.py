@@ -1,3 +1,5 @@
+from osbot_utils.utils.Misc import time_now
+
 from osbot_utils.helpers.Random_Guid import Random_Guid
 
 from osbot_utils.helpers.flows.Task import Task
@@ -36,14 +38,15 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
 
     def handle_event__flow_start(self, flow: Flow):
         prefect__flow_id                         = self.prefect_cloud_api.flow__create({'name': flow.flow_name}).data.id
-
+        tag_1 = 'flow_start'
+        tag_2 = time_now()
         prefect__flow_run_definition             = dict(flow_id    = prefect__flow_id                            ,
                                                         name       = flow.flow_id                                ,
                                                         parameters = dict(answer = 42                            ,
                                                                           source = 'handle_event__flow_start'   ),
                                                         context    = dict(context_1 = 42                         ,
                                                                           context_2 = 'handle_event__flow_start'),
-                                                        tags       = ['tag_1', 'tag_2'                          ])
+                                                        tags       = [tag_1, tag_2                              ])
         prefect_flow_run                         = self.prefect_cloud_api.flow_run__create(prefect__flow_run_definition)
         if prefect_flow_run.status != 'ok':
             pprint("******* Error in handle_event__flow_start ***** ")          # todo: move this to a Flow Events logging system
@@ -63,7 +66,7 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
         prefect__task_run_definition  = { 'flow_run_id' : prefect__flow_run_id,
                                           'dynamic_key' : Random_Guid()       ,
                                           'task_key'    : Random_Guid()       ,
-                                          'name'        : task.task_id        ,
+                                          'name'        : task.task_name      ,
                                           'task_inputs' : {"prop_1": [{"input_type": "parameter"    ,
                                                                        "name"      : "an-parameter" },
                                                                       {"input_type": "constant"     ,
