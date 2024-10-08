@@ -1,11 +1,10 @@
 import requests
-from osbot_utils.decorators.methods.cache_on_self import cache_on_self
-
-from osbot_utils.utils.Http             import url_join_safe
-from osbot_utils.utils.Env              import get_env
-from osbot_utils.base_classes.Type_Safe import Type_Safe
-from osbot_utils.utils.Objects          import dict_to_obj
-from osbot_utils.utils.Status           import status_ok, status_error
+from osbot_utils.decorators.methods.cache_on_self   import cache_on_self
+from osbot_utils.utils.Http                         import url_join_safe, is_url_online
+from osbot_utils.utils.Env                          import get_env
+from osbot_utils.base_classes.Type_Safe             import Type_Safe
+from osbot_utils.utils.Objects                      import dict_to_obj
+from osbot_utils.utils.Status                       import status_ok, status_error
 
 ENV_NAME__PREFECT_CLOUD__API_KEY      = 'PREFECT_CLOUD__API_KEY'
 ENV_NAME__PREFECT_CLOUD__ACCOUNT_ID   = 'PREFECT_CLOUD__ACCOUNT_ID'
@@ -41,6 +40,15 @@ class Prefect__Rest_API(Type_Safe):
         if prefect_cloud_url:
             return prefect_cloud_url
         return DEFAULT_URL__PREFECT_TARGET_SERVER
+
+    def prefect_is_using_local_server(self):
+        return self.prefect_api_url() == DEFAULT_URL__PREFECT_TARGET_SERVER
+
+    @cache_on_self
+    def prefect_is_server_online(self):
+        if self.prefect_is_using_local_server():
+            return is_url_online(self.prefect_api_url())
+        return self.requests__get('').status == 'ok'
 
     def get_headers(self):
         return {"Authorization": f"Bearer {self.prefect_cloud__api_key()}"}                            # Create headers dictionary including authorization token
