@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from enum import Enum
 
+from osbot_prefect.server.Prefect__States import Prefect__States
 from osbot_utils.utils.Dev import pprint
 
 from osbot_utils.base_classes.Type_Safe         import Type_Safe
@@ -50,6 +51,12 @@ class Prefect__Cloud_API(Type_Safe):
     def flow_run__set_state_type(self, flow_run_id, state_type):
         return self.flow_run__set_state(flow_run_id, {'type': state_type})
 
+    def flow_run__set_state_type__running(self, flow_run_id):
+        return self.flow_run__set_state_type(flow_run_id, Prefect__States.RUNNING)
+
+    def flow_run__set_state_type__completed(self, flow_run_id):
+        return self.flow_run__set_state_type(flow_run_id, Prefect__States.COMPLETED)
+
     def flow_run__delete(self, flow_run_id):
         return self.prefect_rest_api.delete(target='flow_runs', target_id=flow_run_id)
 
@@ -90,6 +97,12 @@ class Prefect__Cloud_API(Type_Safe):
 
     def task_run__set_state_type(self, task_run_id, state_type):
         return self.task_run__set_state(task_run_id, {'type': state_type})
+
+    def task_run__set_state_type__running(self, task_run_id):
+        return self.task_run__set_state_type(task_run_id, Prefect__States.RUNNING)
+
+    def task_run__set_state_type__running__completed(self, task_run_id):
+        return self.task_run__set_state_type(task_run_id, Prefect__States.COMPLETED)
 
     def to_prefect_timestamp(self, date_time):
         return date_time.isoformat()
