@@ -10,24 +10,37 @@ ENV_NAME__PREFECT_CLOUD__ACCOUNT_ID   = 'PREFECT_CLOUD__ACCOUNT_ID'
 ENV_NAME__PREFECT_CLOUD__WORKSPACE_ID = 'PREFECT_CLOUD__WORKSPACE_ID'
 ENV_NAME__PREFECT_TARGET_SERVER       = 'PREFECT_TARGET_SERVER'
 
+DEFAULT_URL__PREFECT_TARGET_SERVER    = "http://localhost:4200/api"
+
 class Prefect__Rest_API(Type_Safe):
 
     # raw request methods
-    def api_key(self):
+    def prefect_cloud__api_key(self):
         return get_env(ENV_NAME__PREFECT_CLOUD__API_KEY)
 
-    def account_id(self):
+    def prefect_cloud__api_url(self):
+        api_key      = self.prefect_cloud__api_key()
+        if api_key:
+            account_id   = self.prefect_cloud__account_id()
+            workspace_id =  self.prefect_cloud__workspace_id()
+            if account_id and workspace_id:
+                return f"https://api.prefect.cloud/api/accounts/{account_id}/workspaces/{workspace_id}/"
+
+
+    def prefect_cloud__account_id(self):
         return get_env(ENV_NAME__PREFECT_CLOUD__ACCOUNT_ID)
 
-    def workspace_id(self):
+    def prefect_cloud__workspace_id(self):
         return get_env(ENV_NAME__PREFECT_CLOUD__WORKSPACE_ID)
 
-    def prefect_api_url(self):
-        target_server = get_env(ENV_NAME__PREFECT_TARGET_SERVER,  f"https://api.prefect.cloud/api/accounts/{self.account_id()}/workspaces/{self.workspace_id()}/")
-        return target_server
+    def prefect_api_url(self):                                  # todo: add back the support for Prefect API Cloud (to be configured by en
+        prefect_cloud_url = self.prefect_cloud__api_url()
+        if prefect_cloud_url:
+            return prefect_cloud_url
+        return DEFAULT_URL__PREFECT_TARGET_SERVER
 
     def get_headers(self):
-        return {"Authorization": f"Bearer {self.api_key()}"}                            # Create headers dictionary including authorization token
+        return {"Authorization": f"Bearer {self.prefect_cloud__api_key()}"}                            # Create headers dictionary including authorization token
 
     def requests__for_method(self, method, path, data=None):
         headers  = self.get_headers()

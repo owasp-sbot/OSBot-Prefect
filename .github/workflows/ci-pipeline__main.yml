@@ -8,7 +8,7 @@ on:
 env:
   RELEASE_TYPE           : 'major'
   PACKAGE_NAME           : 'osbot_prefect'
-  PREFECT_TARGET_SERVER  : ${{ secrets.PREFECT_TARGET_SERVER       }}
+  #PREFECT_TARGET_SERVER  : ${{ secrets.PREFECT_TARGET_SERVER       }}
 
 jobs:
 

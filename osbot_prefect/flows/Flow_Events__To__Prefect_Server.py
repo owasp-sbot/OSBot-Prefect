@@ -15,6 +15,13 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
     prefect_cloud_api   : Prefect__Cloud_API
     prefect_ids_mapping : dict
 
+    def __enter__(self):
+        self.add_event_listener()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.remove_event_listener()
+
     def add_event_listener(self):
         flow_events.event_listeners.append(self.event_listener)
 
