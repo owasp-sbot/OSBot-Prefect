@@ -2,7 +2,7 @@ import requests
 from osbot_utils.utils.Http             import url_join_safe
 from osbot_utils.utils.Env              import get_env
 from osbot_utils.base_classes.Type_Safe import Type_Safe
-from osbot_utils.utils.Objects import dict_to_obj
+from osbot_utils.utils.Objects          import dict_to_obj
 from osbot_utils.utils.Status           import status_ok, status_error
 
 ENV_NAME__PREFECT_CLOUD__API_KEY      = 'PREFECT_CLOUD__API_KEY'
@@ -31,7 +31,6 @@ class Prefect__Rest_API(Type_Safe):
 
     def requests__for_method(self, method, path, data=None):
         headers  = self.get_headers()
-
         endpoint = url_join_safe(self.prefect_api_url(), path)                          # Construct the full endpoint URL by joining the base URL with the path
 
         if method == requests.delete:                                                   # For DELETE requests, pass data as query parameters
@@ -51,14 +50,15 @@ class Prefect__Rest_API(Type_Safe):
         content_type = response.headers.get('Content-Type', '')
         if 200 <= status_code < 300:
             if method == requests.head:                                                 # For HEAD requests, return the headers as the response data
-                return status_ok(data=response.headers)
-            if content_type == 'application/json':                                      # For successful JSON responses, return the JSON data
+                result = status_ok(data=response.headers)
+            elif content_type == 'application/json':                                      # For successful JSON responses, return the JSON data
                 json_data  = response.json()
-                json_as_obj = dict_to_obj(json_data)
-                return status_ok(data=json_as_obj)
-            return status_ok(data=response.text)                                      # For other successful requests, return the JSON data
-
-        return status_error(message=f"{method.__name__.upper()} request to {path}, failed with status {status_code}", error=response.text) # For failed requests, return an error message with status and response text
+                result = status_ok(data=json_data)
+            else:
+                result = status_ok(data=response.text)                                      # For other successful requests, return the JSON data
+        else:
+            result = status_error(message=f"{method.__name__.upper()} request to {path}, failed with status {status_code}", error=response.text) # For failed requests, return an error message with status and response text
+        return dict_to_obj(result)
 
 
     def requests__delete(self, path, params=None):                                      # Wrapper for executing DELETE requests
@@ -90,11 +90,9 @@ class Prefect__Rest_API(Type_Safe):
         path = f'/{target}/{target_id}'
         return self.requests__get(path)
 
-    def filter(self, target, limit=5):          # todo: add support for fetching all items
+    def filter(self, target, filter_data):          # todo: add support for fetching all items
         path = f'/{target}/filter'
-        data = { "sort" : "CREATED_DESC",
-                 "limit": limit         }
-        return self.requests__post(path, data)
+        return self.requests__post(path, filter_data)
 
     def update(self, target, target_id, target_data):
         path = f'/{target}/{target_id}'

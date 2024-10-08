@@ -18,11 +18,12 @@ class test_Prefect__Rest_API(TestCase):
     def test_prefect_api_url(self):
         account_id    = self.prefect_rest_api.account_id()
         workspace_id  = self.prefect_rest_api.workspace_id()
-        perfect_cloud = f"https://api.prefect.cloud/api/accounts/{account_id}/workspaces/{workspace_id}/"
-        expected_url = get_env(ENV_NAME__PREFECT_TARGET_SERVER,perfect_cloud)
+        prefect_cloud = f"https://api.prefect.cloud/api/accounts/{account_id}/workspaces/{workspace_id}/"
+        expected_url = get_env(ENV_NAME__PREFECT_TARGET_SERVER, prefect_cloud)
         assert self.prefect_rest_api.prefect_api_url() == expected_url
 
     def test_local_server__api_status(self):
-        url_health = get_env(ENV_NAME__PREFECT_TARGET_SERVER) + '/health'
-        assert url_health == 'http://localhost:4200/api/health'
-        assert GET(url_health) == 'true'
+        if get_env(ENV_NAME__PREFECT_TARGET_SERVER):
+            url_health = get_env(ENV_NAME__PREFECT_TARGET_SERVER) + '/health'
+            assert url_health == 'http://localhost:4200/api/health'
+            assert GET(url_health) == 'true'
