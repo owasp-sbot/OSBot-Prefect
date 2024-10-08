@@ -17,4 +17,4 @@ class Version:
         version = file_contents(self.path_version_file()) or ""
         return version.strip()
 
-version = Version().value()
+version__osbot_prefect = Version().value()

@@ -1,3 +1,6 @@
+from osbot_prefect.utils.for__osbot_aws import in_aws_lambda
+from osbot_utils.utils.Env import in_github_action
+
 from osbot_utils.utils.Misc import time_now
 
 from osbot_utils.helpers.Random_Guid import Random_Guid
@@ -36,17 +39,25 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
             print()
             print(f"Error in handle_event, unknown event_type: {event_type}")
 
+    def current_execution_environment(self):
+        if in_github_action():
+            return  'github_action'
+        elif in_aws_lambda():
+            return 'aws_lambda'
+        else:
+            return 'local'
+
     def handle_event__flow_start(self, flow: Flow):
         prefect__flow_id                         = self.prefect_cloud_api.flow__create({'name': flow.flow_name}).data.id
-        tag_1 = 'flow_start'
-        tag_2 = time_now()
+        tag__current_env                         = self.current_execution_environment()
+        tag__current_time                        = time_now()
         prefect__flow_run_definition             = dict(flow_id    = prefect__flow_id                            ,
                                                         name       = flow.flow_id                                ,
                                                         parameters = dict(answer = 42                            ,
                                                                           source = 'handle_event__flow_start'   ),
                                                         context    = dict(context_1 = 42                         ,
                                                                           context_2 = 'handle_event__flow_start'),
-                                                        tags       = [tag_1, tag_2                              ])
+                                                        tags       = [tag__current_env, tag__current_time       ])
         prefect_flow_run                         = self.prefect_cloud_api.flow_run__create(prefect__flow_run_definition)
         if prefect_flow_run.status != 'ok':
             pprint("******* Error in handle_event__flow_start ***** ")          # todo: move this to a Flow Events logging system
