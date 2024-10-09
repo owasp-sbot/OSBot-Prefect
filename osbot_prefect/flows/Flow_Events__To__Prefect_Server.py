@@ -1,3 +1,5 @@
+import logging
+
 from osbot_prefect.utils.for__osbot_aws import in_aws_lambda
 from osbot_utils.utils.Env import in_github_action
 
@@ -31,10 +33,11 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
         flow_events.event_listeners.append(self.event_listener)
 
     def handle_event(self, event_type: Flow__Event_Type, event_source, event_data):
-        if   event_type == Flow__Event_Type.FLOW_START:  self.handle_event__flow_start(flow=event_source)
-        elif event_type == Flow__Event_Type.FLOW_STOP :  self.handle_event__flow_stop (flow=event_source)
-        elif event_type == Flow__Event_Type.TASK_START:  self.handle_event__task_start(task=event_source)
-        elif event_type == Flow__Event_Type.TASK_STOP :  self.handle_event__task_stop (task=event_source)
+        if   event_type == Flow__Event_Type.FLOW_MESSAGE: self.handle_event__task_message(event_data = event_data  )
+        elif event_type == Flow__Event_Type.FLOW_START  : self.handle_event__flow_start  (flow       = event_source)
+        elif event_type == Flow__Event_Type.FLOW_STOP   : self.handle_event__flow_stop   (flow       = event_source)
+        elif event_type == Flow__Event_Type.TASK_START  : self.handle_event__task_start  (task       = event_source)
+        elif event_type == Flow__Event_Type.TASK_STOP   : self.handle_event__task_stop   (task       = event_source)
         else:
             print()
             print(f"Error in handle_event, unknown event_type: {event_type}")
@@ -46,6 +49,22 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
             return 'aws_lambda'
         else:
             return 'local'
+
+    def handle_event__task_message(self, event_data):
+        flow_run_id          = event_data.get('flow_run_id')
+        task_run_id          = event_data.get('task_run_id')
+        prefect__flow_run_id = self.prefect_ids_mapping.get(flow_run_id)
+        prefect__task_run_id = self.prefect_ids_mapping.get(task_run_id)
+
+        log_name = 'log-message'
+        log_data = dict(flow_run_id = prefect__flow_run_id                                  ,
+                        task_run_id = prefect__task_run_id                                  ,
+                        level       = event_data.get('log_level'       , logging.INFO      ),
+                        name        = log_name                                              ,
+                        message     = event_data.get('message_text'    ,''                 ),
+                        timestamp   = self.prefect_cloud_api.to_prefect_timestamp__now_utc())
+
+        self.prefect_cloud_api.logs__create([log_data])
 
     def handle_event__flow_start(self, flow: Flow):
         prefect__flow_id                         = self.prefect_cloud_api.flow__create({'name': flow.flow_name}).data.id

@@ -1,7 +1,8 @@
-from logging import CRITICAL
 from unittest                                            import TestCase
 
-from osbot_utils.helpers.flows.models.Flow__Config import Flow__Config
+from osbot_utils.utils.Misc import time_now
+
+from osbot_utils.helpers.flows.models.Flow__Config       import Flow__Config
 from osbot_utils.utils.Env                               import load_dotenv
 from osbot_utils.helpers.flows.decorators.task           import task
 from osbot_utils.helpers.flows.Flow                      import Flow
@@ -17,8 +18,10 @@ class test_Flow_Events__To__Prefect_Server(TestCase):
 
     def test_event_listener(self):
         self.flows_to_prefect.add_event_listener()
-        test_flow = an_flow_1()
+        test_flow         = an_flow_1()
+        test_flow.flow_id = time_now(milliseconds_numbers=0)
         test_flow.execute_flow()
+        test_flow.log_error("Testing an error")
         self.flows_to_prefect.remove_event_listener()
 
 
