@@ -1,7 +1,6 @@
 from unittest                                       import TestCase
 
-from osbot_prefect.server.Prefect__Artifacts import Prefect__Artifacts
-from osbot_utils.utils.Dev import pprint
+from osbot_prefect.server.Prefect__Artifacts        import Prefect__Artifacts
 
 from osbot_prefect.server.Prefect__States           import Prefect__States
 from osbot_prefect.testing.Temp__Task_Run           import Temp__Task_Run

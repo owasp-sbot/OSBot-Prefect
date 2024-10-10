@@ -1,17 +1,14 @@
 import logging
 
-from osbot_prefect.utils.for__osbot_aws import in_aws_lambda
-from osbot_utils.utils.Env import in_github_action
+from osbot_prefect.server.Prefect__Artifacts    import Prefect__Artifacts
+from osbot_prefect.utils.for__osbot_aws         import in_aws_lambda
+from osbot_utils.utils.Env                      import in_github_action
+from osbot_utils.utils.Misc                     import time_now
+from osbot_utils.helpers.Random_Guid            import Random_Guid
+from osbot_utils.helpers.flows.Task             import Task
 
-from osbot_utils.utils.Misc import time_now
-
-from osbot_utils.helpers.Random_Guid import Random_Guid
-
-from osbot_utils.helpers.flows.Task import Task
-
-from osbot_prefect.server.Prefect__States import Prefect__States
-from osbot_utils.utils.Dev import pprint
-
+from osbot_prefect.server.Prefect__States       import Prefect__States
+from osbot_utils.utils.Dev                      import pprint
 from osbot_prefect.server.Prefect__Cloud_API    import Prefect__Cloud_API
 from osbot_utils.helpers.flows.Flow             import Flow
 from osbot_utils.base_classes.Type_Safe         import Type_Safe
@@ -36,6 +33,8 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
         if   event_type == Flow__Event_Type.FLOW_MESSAGE: self.handle_event__task_message(event_data = event_data  )
         elif event_type == Flow__Event_Type.FLOW_START  : self.handle_event__flow_start  (flow       = event_source)
         elif event_type == Flow__Event_Type.FLOW_STOP   : self.handle_event__flow_stop   (flow       = event_source)
+        elif event_type == Flow__Event_Type.NEW_RESULT  : self.handle_event__new_result  (event_data = event_data  )
+        elif event_type == Flow__Event_Type.NEW_ARTIFACT: self.handle_event__new_artifact(event_data = event_data  )
         elif event_type == Flow__Event_Type.TASK_START  : self.handle_event__task_start  (task       = event_source)
         elif event_type == Flow__Event_Type.TASK_STOP   : self.handle_event__task_stop   (task       = event_source)
         else:
@@ -49,6 +48,32 @@ class Flow_Events__To__Prefect_Server(Type_Safe):
             return 'aws_lambda'
         else:
             return 'local'
+
+    def handle_event__new_artifact(self, event_data):
+        artifact_key           = event_data.get('key'        )  # add code to validate this value
+        artifact_type          = event_data.get('type'       )
+        artifact_description   = event_data.get('description')
+        artifact_data          = event_data.get('data'       )
+        flow_run_id            = event_data.get('flow_run_id')
+        prefect__flow_run_id   = self.prefect_ids_mapping.get(flow_run_id)
+
+        kwargs                 = { "key"          : artifact_key         ,           # find a better name for this variable than kwargs
+                                   "type"         : artifact_type        ,
+                                   "description"  : artifact_description ,
+                                   "data"         : artifact_data        ,
+                                   "flow_run_id"  : prefect__flow_run_id }
+        self.prefect_cloud_api.artifacts__create(kwargs)
+
+    def handle_event__new_result(self, event_data):
+        result_key           = event_data.get('key'        )        # add code to validate this value
+        result_description   = event_data.get('description')
+        flow_run_id          = event_data.get('flow_run_id')
+        prefect__flow_run_id = self.prefect_ids_mapping.get(flow_run_id)
+        result_data          =  { "key"        : result_key                 ,
+                                  "type"       : Prefect__Artifacts.RESULT  ,
+                                  "description": result_description         ,
+                                  "flow_run_id": prefect__flow_run_id       }
+        self.prefect_cloud_api.artifacts__create(result_data)
 
     def handle_event__task_message(self, event_data):
         flow_run_id          = event_data.get('flow_run_id')

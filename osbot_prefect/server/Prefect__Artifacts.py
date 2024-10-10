@@ -1,7 +1,7 @@
 from osbot_utils.base_classes.Type_Safe import Type_Safe
 
 class Prefect__Artifacts(Type_Safe):
-    LINKS    : str = "links"
+    LINK     : str = "link"
     MARKDOWN : str = "markdown"         # ok: shows in the 'Artifacts' Tab
     PROGRESS : str = "progress"         # todo: check it this one actually works (I was getting 'unknown')
     IMAGES   : str = "images"

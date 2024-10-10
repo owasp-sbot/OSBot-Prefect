@@ -21,6 +21,8 @@ class test_Flow_Events__To__Prefect_Server(TestCase):
         test_flow         = an_flow_1()
         test_flow.flow_id = time_now(milliseconds_numbers=0)
         test_flow.execute_flow()
+        test_flow.add_flow_result('extra-result', 'AAAAAA')
+        test_flow.add_flow_artifact()
         test_flow.log_error("Testing an error")
         self.flows_to_prefect.remove_event_listener()
 
@@ -32,6 +34,7 @@ flow_config = Flow__Config(logging_enabled=False)
 def an_flow_1() -> Flow:
     print('inside the flow')
     an_task_1()
+    return "flow return value"
 
 
 @task()
