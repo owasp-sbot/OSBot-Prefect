@@ -22,7 +22,7 @@ class test_Temp__Flow(TestCase):
         with temp_flow as _:
             assert type(_) is Temp__Flow
             assert is_guid(_.flow_id) is True
-            assert str(type(_.flow))  == "<class 'osbot_utils.utils.Objects._'>"
+            assert str(type(_.flow))  == "<class 'osbot_utils.utils.Objects.__'>"
             assert _.flow__info()           == _.flow
             assert _.flow__exists()         is True
         assert _.flow__info  () is None

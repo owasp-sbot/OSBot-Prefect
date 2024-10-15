@@ -67,7 +67,7 @@ class Prefect__Cloud_API(Type_Safe):
     def logs__create(self, log_data):
         return self.prefect_rest_api.create(target='logs', data=log_data)
 
-    def logs__filter(self, limit=5):
+    def logs__filter(self, limit=100):
         filter_data = {"sort": "TIMESTAMP_DESC",
                        "limit": limit}
         return self.prefect_rest_api.filter(target='logs', filter_data=filter_data)

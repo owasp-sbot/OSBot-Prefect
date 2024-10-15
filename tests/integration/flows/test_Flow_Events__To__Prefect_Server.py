@@ -1,8 +1,6 @@
 from unittest                                            import TestCase
-
-from osbot_utils.utils.Misc import time_now
-
-from osbot_utils.helpers.flows.models.Flow__Config       import Flow__Config
+from osbot_utils.utils.Misc                              import time_now
+from osbot_utils.helpers.flows.models.Flow_Run__Config   import Flow_Run__Config
 from osbot_utils.utils.Env                               import load_dotenv
 from osbot_utils.helpers.flows.decorators.task           import task
 from osbot_utils.helpers.flows.Flow                      import Flow
@@ -28,7 +26,7 @@ class test_Flow_Events__To__Prefect_Server(TestCase):
 
 
 # example flow
-flow_config = Flow__Config(logging_enabled=False)
+flow_config = Flow_Run__Config(logging_enabled=True)
 
 @flow(flow_config=flow_config)
 def an_flow_1() -> Flow:

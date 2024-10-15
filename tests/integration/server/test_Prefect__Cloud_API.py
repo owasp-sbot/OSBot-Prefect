@@ -1,11 +1,13 @@
 from unittest                                       import TestCase
 
+from osbot_utils.helpers.trace.Trace_Call import trace_calls
+
 from osbot_prefect.server.Prefect__Artifacts        import Prefect__Artifacts
 
 from osbot_prefect.server.Prefect__States           import Prefect__States
 from osbot_prefect.testing.Temp__Task_Run           import Temp__Task_Run
 from osbot_prefect.testing.Temp__Flow_Run           import Temp__Flow_Run
-from osbot_utils.utils.Misc                         import random_id, is_guid, random_text
+from osbot_utils.utils.Misc import random_id, is_guid, random_text, wait_for
 from osbot_utils.utils.Env                          import load_dotenv
 from osbot_prefect.server.Prefect__Cloud_API        import Prefect__Cloud_API
 from osbot_utils.utils.Objects import dict_to_obj, obj_to_dict
@@ -149,13 +151,16 @@ class test_Prefect__Cloud_API(TestCase):
 
     def test_logs_create(self):
         with Temp__Task_Run() as _:
-            log_item_0 = dict_to_obj({"name"       : "log_to_flow", "level": 0 , "message": "log_to_flow"                        ,
+            random_message_0 = random_text('random-message-0')
+            random_message_1 = random_text('random-message-1')
+            random_message_2 = random_text('random-message-2')
+            log_item_0 = dict_to_obj({"name"       : "log_to_flow", "level": 0 , "message": random_message_0                     ,
                                       "timestamp"  : self.prefect_cloud_api.to_prefect_timestamp__now_utc()                      ,
                                       "flow_run_id": _.flow_run_id                                                               })
-            log_item_1 = dict_to_obj({"name"       : "log_to_task", "level": 10, "message": "log_to_task"                        ,
+            log_item_1 = dict_to_obj({"name"       : "log_to_task", "level": 10, "message": random_message_1                      ,
                                       "timestamp"  : self.prefect_cloud_api.to_prefect_timestamp__now_utc__with_delta(seconds=-5) ,
                                       "task_run_id": _.task_run_id                                                               })
-            log_item_2 = dict_to_obj({"name"       : "log_to_both", "level": 20, "message": "log_to_both"                        ,
+            log_item_2 = dict_to_obj({"name"       : "log_to_both", "level": 20, "message": random_message_2                      ,
                                       "timestamp"  : self.prefect_cloud_api.to_prefect_timestamp__now_utc__with_delta(seconds=-10),
                                       "task_run_id": _.task_run_id, "flow_run_id": _.flow_run_id                                 })
 
@@ -167,21 +172,29 @@ class test_Prefect__Cloud_API(TestCase):
             assert _.prefect_cloud_api.logs__create([obj_to_dict(log_item_2)]).status == 'ok'
 
             logs = _.prefect_cloud_api.logs__filter().data
-            assert logs[0].name        == log_item_0.name
-            assert logs[0].level       == log_item_0.level
-            assert logs[0].message     == log_item_0.message
-            assert logs[0].timestamp   == log_item_0.timestamp
-            assert logs[0].flow_run_id == log_item_0.flow_run_id
-            assert logs[0].task_run_id is None
 
-            # todo: figure out why the checks below fail intermittently (also add the test for log_item_2)
-            # assert logs[1].name        == log_item_1.name
-            # assert logs[1].level       == log_item_1.level
-            # assert logs[1].message     == log_item_1.message
-            # assert logs[1].timestamp   == log_item_1.timestamp
-            # assert logs[1].flow_run_id is None
-            # assert logs[1].task_run_id == log_item_1.task_run_id
-
+            for log in logs:
+                if log.message == random_message_0:
+                    assert log.name        == log_item_0.name
+                    assert log.level       == log_item_0.level
+                    assert log.message     == log_item_0.message
+                    assert log.timestamp   == log_item_0.timestamp
+                    assert log.flow_run_id == log_item_0.flow_run_id
+                    assert log.task_run_id is None
+                if log.message == random_message_1:
+                    assert log.name        == log_item_1.name
+                    assert log.level       == log_item_1.level
+                    assert log.message     == log_item_1.message
+                    assert log.timestamp   == log_item_1.timestamp
+                    assert log.flow_run_id is None
+                    assert log.task_run_id == log_item_1.task_run_id
+                if log.message == random_message_2:
+                    assert log.name        == log_item_2.name
+                    assert log.level       == log_item_2.level
+                    assert log.message     == log_item_2.message
+                    assert log.timestamp   == log_item_2.timestamp
+                    assert log.flow_run_id == log_item_2.flow_run_id
+                    assert log.task_run_id == log_item_2.task_run_id
 
 
 
